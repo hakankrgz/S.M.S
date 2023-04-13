@@ -17,7 +17,7 @@ def closeye_label(event):
     passwordEntry.config(show='*')
     eyeLabel.bind("<Button-1>", openeye_label)
 
-    
+
 def signup_label(event):
     login_window.destroy()
     import signup
@@ -44,7 +44,8 @@ def login_user(event):
             messagebox.showerror('Error', 'Geçersiz Kullanıcı Adı veya Şifre')
         else:
             messagebox.showinfo('Welcome', 'Giriş Başarılı!')
-            webbrowser.open('https://www.instagram.com/')
+            login_window.destroy()
+            import sms.py
 
 
 def forget_pass(event):

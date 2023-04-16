@@ -8,139 +8,145 @@ from PIL import ImageTk
 
 
 # FONKSİYONLAR
+def toplevel_data(title, button_text, command):
+    global idEntry, phoneEntry, nameEntry, emailEntry, addressEntry, genderEntry, dobEntry, screen
+    screen = Toplevel()
+    screen.title(title)
+    screen.grab_set()
+    screen.resizable(False, False)
+    idLabel = Label(screen, text='Numara', font=('times new roman', 20, 'bold'))
+    idLabel.grid(row=0, column=0, padx=30, pady=15, sticky=W)
+    idEntry = Entry(screen, font=('roman', 15, 'bold'), width=24)
+    idEntry.grid(row=0, column=1, pady=15, padx=10)
 
-def search_student():
-    def search_data():
-        query = 'select * from student where id=%s or name=%s or email=%s or mobile=%s or address=%s or gender=%s or dob=%s'
-        mycursor.execute(query, (
-        idEntry.get(), nameEntry.get(), emailEntry.get(), phoneEntry.get(), adressEntry.get(), genderEntry.get(),
+    nameLabel = Label(screen, text='İsim', font=('times new roman', 20, 'bold'))
+    nameLabel.grid(row=1, column=0, padx=30, pady=15, sticky=W)
+    nameEntry = Entry(screen, font=('roman', 15, 'bold'), width=24)
+    nameEntry.grid(row=1, column=1, pady=15, padx=10)
+
+    phoneLabel = Label(screen, text='Telefon', font=('times new roman', 20, 'bold'))
+    phoneLabel.grid(row=2, column=0, padx=30, pady=15, sticky=W)
+    phoneEntry = Entry(screen, font=('roman', 15, 'bold'), width=24)
+    phoneEntry.grid(row=2, column=1, pady=15, padx=10)
+
+    emailLabel = Label(screen, text='E-posta', font=('times new roman', 20, 'bold'))
+    emailLabel.grid(row=3, column=0, padx=30, pady=15, sticky=W)
+    emailEntry = Entry(screen, font=('roman', 15, 'bold'), width=24)
+    emailEntry.grid(row=3, column=1, pady=15, padx=10)
+
+    addressLabel = Label(screen, text='Adres', font=('times new roman', 20, 'bold'))
+    addressLabel.grid(row=4, column=0, padx=30, pady=15, sticky=W)
+    addressEntry = Entry(screen, font=('roman', 15, 'bold'), width=24)
+    addressEntry.grid(row=4, column=1, pady=15, padx=10)
+
+    genderLabel = Label(screen, text='Cinsiyet', font=('times new roman', 20, 'bold'))
+    genderLabel.grid(row=5, column=0, padx=30, pady=15, sticky=W)
+    genderEntry = Entry(screen, font=('roman', 15, 'bold'), width=24)
+    genderEntry.grid(row=5, column=1, pady=15, padx=10)
+
+    dobLabel = Label(screen, text='Doğ. Tar.', font=('times new roman', 20, 'bold'))
+    dobLabel.grid(row=6, column=0, padx=30, pady=15, sticky=W)
+    dobEntry = Entry(screen, font=('roman', 15, 'bold'), width=24)
+    dobEntry.grid(row=6, column=1, pady=15, padx=10)
+
+    student_button = ttk.Button(screen, text=button_text, command=command)
+    student_button.grid(row=7, columnspan=2, pady=15)
+    if title == 'Öğrenci Güncelle':
+        indexing = studentTable.focus()
+
+        content = studentTable.item(indexing)
+        listdata = content['values']
+        idEntry.insert(0, listdata[0])
+        nameEntry.insert(0, listdata[1])
+        phoneEntry.insert(0, listdata[2])
+        emailEntry.insert(0, listdata[3])
+        addressEntry.insert(0, listdata[4])
+        genderEntry.insert(0, listdata[5])
+        dobEntry.insert(0, listdata[6])
+
+
+def update_data():
+    query = 'update student set name=%s,mobile=%s,email=%s,address=%s,gender=%s,dob=%s,date=%s,time=%s where id=%s'
+    mycursor.execute(query, (
+        nameEntry.get(), phoneEntry.get(), emailEntry.get(), addressEntry.get(), genderEntry.get(), dobEntry.get(),
+        date, currenttime, idEntry.get()))
+    con.commit()
+    messagebox.showinfo('Succes', f'{idEntry.get()} numaralı kişi başarıyla güncellendi.', parent=screen)
+    screen.destroy()
+    show_student()
+
+
+def show_student():
+    query = 'select * from student'
+    mycursor.execute(query)
+    fetched_data = mycursor.fetchall()
+    studentTable.delete(*studentTable.get_children())
+    for data in fetched_data:
+        studentTable.insert('', END, values=data)
+
+
+def delete_student():
+    indexing = studentTable.focus()
+    print(indexing)
+    content = studentTable.item(indexing)
+    content_id = content['values'][0]
+    query = 'delete from student where id=%s'
+    mycursor.execute(query, (content_id,))
+    con.commit()
+    messagebox.showinfo('Deleted', f'{content_id} numaralı kişi başarıyla silindi.')
+    query = 'select * from student'
+    mycursor.execute(query)
+    fetched_data = mycursor.fetchall()
+    studentTable.delete(*studentTable.get_children())
+    for data in fetched_data:
+        studentTable.insert('', END, values=data)
+
+
+def search_data():
+    query = 'select * from student where id=%s or name=%s or email=%s or mobile=%s or address=%s or gender=%s or dob=%s'
+    mycursor.execute(query, (
+        idEntry.get(), nameEntry.get(), emailEntry.get(), phoneEntry.get(), addressEntry.get(), genderEntry.get(),
         dobEntry.get(),))
-        studentTable.delete(*studentTable.get_children())
+    studentTable.delete(*studentTable.get_children())
+    fetched_data = mycursor.fetchall()
+    for data in fetched_data:
+        studentTable.insert('', END, values=data)
+
+
+def add_data():
+    if idEntry.get() == '' or nameEntry.get() == '' or phoneEntry.get() == '' or emailEntry.get() == '' or addressEntry.get() == '' or genderEntry.get() == '' or dobEntry.get() == '':
+        messagebox.showerror('Error', 'Tüm Alanlar Doldurulmalı!', parent=screen)
+
+    else:
+        try:
+            query = 'insert into student values(%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+            mycursor.execute(query, (
+                idEntry.get(), nameEntry.get(), phoneEntry.get(), emailEntry.get(), addressEntry.get(),
+                genderEntry.get(), dobEntry.get(), date, currenttime))
+            con.commit()
+            result = messagebox.askyesno('Confirm', 'Veri Başarıyla Eklendi. Formu Temizlemek İstiyor Musunuz?',
+                                         parent=screen)
+            if result:
+                idEntry.delete(0, END)
+                nameEntry.delete(0, END)
+                phoneEntry.delete(0, END)
+                emailEntry.delete(0, END)
+                addressEntry.delete(0, END)
+                genderEntry.delete(0, END)
+                dobEntry.delete(0, END)
+            else:
+                pass
+        except:
+            messagebox.showerror('Error', 'Var Olan Numara Girilmez!', parent=screen)
+            return
+
+        query = 'select * from student'
+        mycursor.execute(query)
         fetched_data = mycursor.fetchall()
+        studentTable.delete(*studentTable.get_children())
         for data in fetched_data:
-            studentTable.insert('', END, values=data)
-
-    search_window = Toplevel()
-    search_window.title('Öğrenci Ara')
-    search_window.grab_set()
-    search_window.resizable(False, False)
-    idLabel = Label(search_window, text='Numara', font=('times new roman', 20, 'bold'))
-    idLabel.grid(row=0, column=0, padx=30, pady=15, sticky=W)
-    idEntry = Entry(search_window, font=('roman', 15, 'bold'), width=24)
-    idEntry.grid(row=0, column=1, pady=15, padx=10)
-
-    nameLabel = Label(search_window, text='İsim', font=('times new roman', 20, 'bold'))
-    nameLabel.grid(row=1, column=0, padx=30, pady=15, sticky=W)
-    nameEntry = Entry(search_window, font=('roman', 15, 'bold'), width=24)
-    nameEntry.grid(row=1, column=1, pady=15, padx=10)
-
-    phoneLabel = Label(search_window, text='Telefon', font=('times new roman', 20, 'bold'))
-    phoneLabel.grid(row=2, column=0, padx=30, pady=15, sticky=W)
-    phoneEntry = Entry(search_window, font=('roman', 15, 'bold'), width=24)
-    phoneEntry.grid(row=2, column=1, pady=15, padx=10)
-
-    emailLabel = Label(search_window, text='E-posta', font=('times new roman', 20, 'bold'))
-    emailLabel.grid(row=3, column=0, padx=30, pady=15, sticky=W)
-    emailEntry = Entry(search_window, font=('roman', 15, 'bold'), width=24)
-    emailEntry.grid(row=3, column=1, pady=15, padx=10)
-
-    adressLabel = Label(search_window, text='Adres', font=('times new roman', 20, 'bold'))
-    adressLabel.grid(row=4, column=0, padx=30, pady=15, sticky=W)
-    adressEntry = Entry(search_window, font=('roman', 15, 'bold'), width=24)
-    adressEntry.grid(row=4, column=1, pady=15, padx=10)
-
-    genderLabel = Label(search_window, text='Cinsiyet', font=('times new roman', 20, 'bold'))
-    genderLabel.grid(row=5, column=0, padx=30, pady=15, sticky=W)
-    genderEntry = Entry(search_window, font=('roman', 15, 'bold'), width=24)
-    genderEntry.grid(row=5, column=1, pady=15, padx=10)
-
-    dobLabel = Label(search_window, text='Doğ. Tar.', font=('times new roman', 20, 'bold'))
-    dobLabel.grid(row=6, column=0, padx=30, pady=15, sticky=W)
-    dobEntry = Entry(search_window, font=('roman', 15, 'bold'), width=24)
-    dobEntry.grid(row=6, column=1, pady=15, padx=10)
-
-    search_student_button = ttk.Button(search_window, text='Ara', command=search_data)
-    search_student_button.grid(row=7, columnspan=2, pady=15)
-
-
-def add_student():
-    def add_data():
-        if idEntry.get() == '' or nameEntry.get() == '' or phoneEntry.get() == '' or emailEntry.get() == '' or adressEntry.get() == '' or genderEntry.get() == '' or dobEntry.get() == '':
-            messagebox.showerror('Error', 'Tüm Alanlar Doldurulmalı!', parent=add_window)
-
-        else:
-            currentdate = time.strftime('%d/%m/%Y')
-            currenttime = time.strftime('%H:%M:%S')
-            try:
-                query = 'insert into student values(%s,%s,%s,%s,%s,%s,%s,%s,%s)'
-                mycursor.execute(query, (
-                    idEntry.get(), nameEntry.get(), phoneEntry.get(), emailEntry.get(), adressEntry.get(),
-                    genderEntry.get(), dobEntry.get(), currentdate, currenttime))
-                con.commit()
-                result = messagebox.askyesno('Confirm', 'Veri Başarıyla Eklendi. Formu Temizlemek İstiyor Musunuz?',
-                                             parent=add_window)
-                if result:
-                    idEntry.delete(0, END)
-                    nameEntry.delete(0, END)
-                    phoneEntry.delete(0, END)
-                    emailEntry.delete(0, END)
-                    adressEntry.delete(0, END)
-                    genderEntry.delete(0, END)
-                    dobEntry.delete(0, END)
-                else:
-                    pass
-            except:
-                messagebox.showerror('Error', 'Var Olan Numara Girilmez!', parent=add_window)
-                return
-
-            query = 'select * from student'
-            mycursor.execute(query)
-            fetched_data = mycursor.fetchall()
-            studentTable.delete(*studentTable.get_children())
-            for data in fetched_data:
-                datalist = list(data)
-                studentTable.insert('', END, values=datalist)
-
-    add_window = Toplevel()
-    add_window.grab_set()
-    add_window.resizable(False, False)
-    idLabel = Label(add_window, text='Numara', font=('times new roman', 20, 'bold'))
-    idLabel.grid(row=0, column=0, padx=30, pady=15, sticky=W)
-    idEntry = Entry(add_window, font=('roman', 15, 'bold'), width=24)
-    idEntry.grid(row=0, column=1, pady=15, padx=10)
-
-    nameLabel = Label(add_window, text='İsim', font=('times new roman', 20, 'bold'))
-    nameLabel.grid(row=1, column=0, padx=30, pady=15, sticky=W)
-    nameEntry = Entry(add_window, font=('roman', 15, 'bold'), width=24)
-    nameEntry.grid(row=1, column=1, pady=15, padx=10)
-
-    phoneLabel = Label(add_window, text='Telefon', font=('times new roman', 20, 'bold'))
-    phoneLabel.grid(row=2, column=0, padx=30, pady=15, sticky=W)
-    phoneEntry = Entry(add_window, font=('roman', 15, 'bold'), width=24)
-    phoneEntry.grid(row=2, column=1, pady=15, padx=10)
-
-    emailLabel = Label(add_window, text='E-posta', font=('times new roman', 20, 'bold'))
-    emailLabel.grid(row=3, column=0, padx=30, pady=15, sticky=W)
-    emailEntry = Entry(add_window, font=('roman', 15, 'bold'), width=24)
-    emailEntry.grid(row=3, column=1, pady=15, padx=10)
-
-    adressLabel = Label(add_window, text='Adres', font=('times new roman', 20, 'bold'))
-    adressLabel.grid(row=4, column=0, padx=30, pady=15, sticky=W)
-    adressEntry = Entry(add_window, font=('roman', 15, 'bold'), width=24)
-    adressEntry.grid(row=4, column=1, pady=15, padx=10)
-
-    genderLabel = Label(add_window, text='Cinsiyet', font=('times new roman', 20, 'bold'))
-    genderLabel.grid(row=5, column=0, padx=30, pady=15, sticky=W)
-    genderEntry = Entry(add_window, font=('roman', 15, 'bold'), width=24)
-    genderEntry.grid(row=5, column=1, pady=15, padx=10)
-
-    dobLabel = Label(add_window, text='Doğ. Tar.', font=('times new roman', 20, 'bold'))
-    dobLabel.grid(row=6, column=0, padx=30, pady=15, sticky=W)
-    dobEntry = Entry(add_window, font=('roman', 15, 'bold'), width=24)
-    dobEntry.grid(row=6, column=1, pady=15, padx=10)
-
-    add_student_button = ttk.Button(add_window, text='Öğrenci Ekle', command=add_data)
-    add_student_button.grid(row=7, columnspan=2, pady=15)
+            datalist = list(data)
+            studentTable.insert('', END, values=datalist)
 
 
 def connect_database():
@@ -217,9 +223,9 @@ def slider():
 
 
 def clock():
+    global date, currenttime
     date = time.strftime('%d/%m/%Y')
     currenttime = time.strftime('%H:%M:%S')
-    print(date, currenttime)
     datetimeLabel.config(text=f'    Tarih: {date}\nTime: {currenttime}')
     datetimeLabel.after(1000, clock)
 
@@ -251,19 +257,22 @@ logo_image = ImageTk.PhotoImage(file='student.png')
 logo_Label = Label(leftFrame, image=logo_image)
 logo_Label.grid(row=0, column=0)
 
-addstudentButton = ttk.Button(leftFrame, text='Öğrenci Ekle', width=25, state=DISABLED, command=add_student)
+addstudentButton = ttk.Button(leftFrame, text='Öğrenci Ekle', width=25, state=DISABLED,
+                              command=lambda: toplevel_data('Öğrenci Ekle', 'Ekle', add_data))
 addstudentButton.grid(row=1, column=0, pady=20)
 
-searchstudentButton = ttk.Button(leftFrame, text='Öğrenci Ara', width=25, state=DISABLED, command=search_student)
+searchstudentButton = ttk.Button(leftFrame, text='Öğrenci Ara', width=25, state=DISABLED,
+                                 command=lambda: toplevel_data('Öğrenci Ara', 'Ara', search_data))
 searchstudentButton.grid(row=2, column=0, pady=20)
 
-deletestudentButton = ttk.Button(leftFrame, text='Öğrenci Sil', width=25, state=DISABLED)
+deletestudentButton = ttk.Button(leftFrame, text='Öğrenci Sil', width=25, state=DISABLED, command=delete_student)
 deletestudentButton.grid(row=3, column=0, pady=20)
 
-updatestudentButton = ttk.Button(leftFrame, text='Öğrenci Güncelle', width=25, state=DISABLED)
+updatestudentButton = ttk.Button(leftFrame, text='Öğrenci Güncelle', width=25, state=DISABLED,
+                                 command=lambda: toplevel_data('Öğrenci Güncelle', 'Güncelle', update_data))
 updatestudentButton.grid(row=4, column=0, pady=20)
 
-showstudentButton = ttk.Button(leftFrame, text='Öğrenci Görüntüle', width=25, state=DISABLED)
+showstudentButton = ttk.Button(leftFrame, text='Öğrenci Görüntüle', width=25, state=DISABLED, command=show_student)
 showstudentButton.grid(row=5, column=0, pady=20)
 
 exportstudentButton = ttk.Button(leftFrame, text='Dışa Aktar', width=25, state=DISABLED)
@@ -299,6 +308,22 @@ studentTable.heading('CİNSİYET', text='CİNSİYET')
 studentTable.heading('DOĞ. TAR.', text='DOĞ. TAR.')
 studentTable.heading('KAYIT TARİHİ', text='KAYIT TARİHİ')
 studentTable.heading('KAYIT SAATİ', text='KAYIT SAATİ')
+
+studentTable.column('NUMARA', width=65, anchor=CENTER)
+studentTable.column('İSİM', width=200, anchor=CENTER)
+studentTable.column('TEL. NO', width=100, anchor=CENTER)
+studentTable.column('E-POSTA', width=200, anchor=CENTER)
+studentTable.column('ADRES', width=300, anchor=CENTER)
+studentTable.column('TEL. NO', width=100, anchor=CENTER)
+studentTable.column('CİNSİYET', width=65, anchor=CENTER)
+studentTable.column('DOĞ. TAR.', width=100, anchor=CENTER)
+studentTable.column('KAYIT TARİHİ', width=100, anchor=CENTER)
+studentTable.column('KAYIT SAATİ', width=100, anchor=CENTER)
+
+style = ttk.Style()
+
+style.configure('Treeview', rowheight=40, font=('arial', 13, 'bold'), background='white')
+style.configure('Treeview.Heading', font=('arial', 13, 'bold'))
 
 studentTable.config(show='headings')
 

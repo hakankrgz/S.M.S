@@ -10,11 +10,18 @@ from PIL import ImageTk
 # FONKSİYONLAR
 
 def search_student():
-    def search_dara():
-        query='select * from student where id=%s'
-        mycursor.execute(query,(idEntry.get()))
+    def search_data():
+        query = 'select * from student where id=%s or name=%s or email=%s or mobile=%s or address=%s or gender=%s or dob=%s'
+        mycursor.execute(query, (
+        idEntry.get(), nameEntry.get(), emailEntry.get(), phoneEntry.get(), adressEntry.get(), genderEntry.get(),
+        dobEntry.get(),))
+        studentTable.delete(*studentTable.get_children())
+        fetched_data = mycursor.fetchall()
+        for data in fetched_data:
+            studentTable.insert('', END, values=data)
 
     search_window = Toplevel()
+    search_window.title('Öğrenci Ara')
     search_window.grab_set()
     search_window.resizable(False, False)
     idLabel = Label(search_window, text='Numara', font=('times new roman', 20, 'bold'))
@@ -52,7 +59,7 @@ def search_student():
     dobEntry = Entry(search_window, font=('roman', 15, 'bold'), width=24)
     dobEntry.grid(row=6, column=1, pady=15, padx=10)
 
-    search_student_button = ttk.Button(search_window, text='Öğrenci Ara', command=search_data)
+    search_student_button = ttk.Button(search_window, text='Ara', command=search_data)
     search_student_button.grid(row=7, columnspan=2, pady=15)
 
 

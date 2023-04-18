@@ -1,7 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
 from PIL import ImageTk
-import webbrowser
 import mysql.connector
 
 
@@ -26,7 +25,7 @@ def connect_database(event):
             con = mysql.connector.connect(host='localhost', user='root', password='')
             mycursor = con.cursor()
         except:
-            messagebox.showerror('Error', 'Veritabanı Bağlantısında Hata Var, Tekrar Dene')
+            messagebox.showerror('Error', 'Veri Tabanı Bağlantısında Hata Var, Tekrar Dene!')
             return
 
         try:

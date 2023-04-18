@@ -1,13 +1,37 @@
 from tkinter import *
 import time
 import ttkthemes
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import messagebox, ttk, filedialog
 import mysql.connector
 from PIL import ImageTk
+import pandas as pd
 
 
 # FONKSİYONLAR
+def iexit():
+    result = messagebox.askyesno('Confirm', 'Çıkış yapmak istiyor musunuz?')
+    if result:
+        root.destroy()
+    else:
+        pass
+
+
+def export_data():
+    url = filedialog.asksaveasfilename(defaultextension='.xlsx')
+    indexing = studentTable.get_children()
+    newlist = []
+    for index in indexing:
+        content = studentTable.item(index)
+        datalist = content['values']
+        newlist.append(datalist)
+
+    table = pd.DataFrame(newlist,
+                         columns=['NUMARA', 'İSİM', 'TELEFON', 'E-POSTA', 'ADRES', 'CİNSİYET', 'DOĞ. TAR.',
+                                  'KAYIT TARİHİ', 'KAYIT SAATİ'])
+    table.to_excel(url, index=False)
+    messagebox.showinfo('Succes', 'Dosya başarıyla dışa aktarıldı.')
+
+
 def toplevel_data(title, button_text, command):
     global idEntry, phoneEntry, nameEntry, emailEntry, addressEntry, genderEntry, dobEntry, screen
     screen = Toplevel()
@@ -153,7 +177,7 @@ def connect_database():
     def connect():
         global mycursor, con
         try:
-            con = mysql.connector.connect(host='localhost', user='root', password='')
+            con = mysql.connector.connect(host=hostEntry.get(), user=usernameEntry.get(), password='')
             mycursor = con.cursor()
         except:
             messagebox.showerror('Error', 'Geçersiz Giriş!', parent=connectWindow)
@@ -275,10 +299,10 @@ updatestudentButton.grid(row=4, column=0, pady=20)
 showstudentButton = ttk.Button(leftFrame, text='Öğrenci Görüntüle', width=25, state=DISABLED, command=show_student)
 showstudentButton.grid(row=5, column=0, pady=20)
 
-exportstudentButton = ttk.Button(leftFrame, text='Dışa Aktar', width=25, state=DISABLED)
+exportstudentButton = ttk.Button(leftFrame, text='Dışa Aktar/Yazdır', width=25, state=DISABLED, command=export_data)
 exportstudentButton.grid(row=6, column=0, pady=20)
 
-exitButton = ttk.Button(leftFrame, text='Çıkış', width=25)
+exitButton = ttk.Button(leftFrame, text='Çıkış', width=25, command=iexit)
 exitButton.grid(row=7, column=0, pady=20)
 
 rightFrame = Frame(root)

@@ -1,6 +1,5 @@
 from tkinter import *
 from PIL import ImageTk, Image
-import webbrowser
 from tkinter import messagebox
 import mysql.connector
 
@@ -45,7 +44,7 @@ def login_user(event):
         else:
             messagebox.showinfo('Welcome', 'Giriş Başarılı!')
             login_window.destroy()
-            import sms.py
+            import sms
 
 
 def forget_pass(event):
